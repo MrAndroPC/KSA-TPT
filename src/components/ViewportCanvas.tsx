@@ -1,0 +1,14 @@
+// src/components/ViewportCanvas.tsx
+import React from "react";
+import { Canvas } from "@react-three/fiber";
+import { SceneRoot } from "./SceneRoot";
+
+export const ViewportCanvas: React.FC = () => {
+  return (
+    <div style={{ flex: 1, height: "100vh" }}>
+      <Canvas camera={{ position: [4, 3, 6], fov: 50 }}>
+        <SceneRoot />
+      </Canvas>
+    </div>
+  );
+};
