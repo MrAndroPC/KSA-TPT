@@ -12,7 +12,7 @@ interface ThrustersState {
   resetThrusterRotation: (id: string) => void;
 }
 //eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const useThrustersStore = create<ThrustersState>((set, get) => ({
+export const useThrustersStore = create<ThrustersState>((set, _get) => ({
   thrusters: [],
   selectedId: null,
 

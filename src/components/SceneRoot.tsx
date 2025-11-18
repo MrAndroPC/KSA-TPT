@@ -11,8 +11,7 @@ import { useEditorStore } from "../state/editorStore";
 import { useModelStore } from "../state/modelStore";
 
 export const SceneRoot: React.FC = () => {
-  // Get the R3F camera once per render; treat as immutable in this component. [web:188][web:197]
-  const threeCamera = useThree((state) => state.camera as PerspectiveCamera);
+  const threeCamera = useThree((state) => state.camera as PerspectiveCamera); // [web:197][attached_file:1]
   const cameraRef = useRef<PerspectiveCamera | null>(threeCamera);
   const controlsRef = useRef<OrbitControlsImpl>(null!);
 
@@ -20,46 +19,48 @@ export const SceneRoot: React.FC = () => {
   const meanRadius = useModelStore((s) => s.meanRadius) ?? 1;
   const glbUrl = useModelStore((s) => s.glbUrl);
 
-  // Keep ref in sync with the current three.js camera instance. [web:188][web:194]
+  const lockedPolarRef = useRef(0);     // [web:2][web:181]
+  const lockedAzimuthRef = useRef(0);   // [web:2][web:181]
+  const snappingRef = useRef(false);    // ignore onChange while snapping [web:184][web:189]
+
   useEffect(() => {
     cameraRef.current = threeCamera;
-  }, [threeCamera]);
+  }, [threeCamera]); // [web:197][attached_file:1]
 
-  // Snap camera + pseudo-orthographic mode when axisView changes. [web:166][web:168][web:174][web:179]
   useEffect(() => {
     const camera = cameraRef.current;
-    if (!camera) return;
+    if (!camera) return; // [web:197][attached_file:1]
 
     const controls = controlsRef.current;
     const target = new Vector3(0, 0, 0);
-    const dist = meanRadius * 3;
+    const dist = meanRadius * 3; // [web:146][web:150]
 
     if (axisView === "none") {
-      // Restore normal perspective [web:166][web:179]
       camera.fov = 50;
       camera.updateProjectionMatrix();
       return;
     }
 
-    const pos = new Vector3();
+    snappingRef.current = true; // programmatic snap starts [web:184][web:189]
 
+    const pos = new Vector3();
     switch (axisView) {
-      case "front":   // +X
+      case "front":
         pos.set(dist, 0, 0);
         break;
-      case "back":    // -X
+      case "back":
         pos.set(-dist, 0, 0);
         break;
-      case "right":   // +Y
+      case "right":
         pos.set(0, dist, 0);
         break;
-      case "left":    // -Y
+      case "left":
         pos.set(0, -dist, 0);
         break;
-      case "top":     // +Z
+      case "top":
         pos.set(0, 0, dist);
         break;
-      case "bottom":  // -Z
+      case "bottom":
         pos.set(0, 0, -dist);
         break;
     }
@@ -67,15 +68,21 @@ export const SceneRoot: React.FC = () => {
     camera.position.copy(pos);
     if (controls) {
       controls.target.copy(target);
-      controls.update();
+      controls.update(); // will fire onChange, but snappingRef prevents exit [web:181][web:184][web:189]
+
+      lockedPolarRef.current = controls.getPolarAngle();       // [web:2][web:181][web:189]
+      lockedAzimuthRef.current = controls.getAzimuthalAngle(); // [web:2][web:181][web:189]
     } else {
       camera.lookAt(target);
+      lockedPolarRef.current = 0;
+      lockedAzimuthRef.current = 0;
     }
 
-    // Ortho-like view: narrow FOV while staying in perspective. [web:168][web:179][web:165]
-    camera.fov = 5;
+    camera.fov = 5; // pseudo-orthographic [web:168][web:179]
     camera.updateProjectionMatrix();
-  }, [axisView, meanRadius]);
+
+    snappingRef.current = false; // snap finished [web:184][web:189]
+  }, [axisView, meanRadius]); // [web:181][web:189][attached_file:1]
 
   return (
     <>
@@ -93,11 +100,26 @@ export const SceneRoot: React.FC = () => {
       <OrbitControls
         ref={controlsRef}
         makeDefault
-        onStart={() => {
-          // Any user camera interaction exits axis-locked view. [web:166][web:178]
+        onChange={() => {
           const { axisView, setAxisView } = useEditorStore.getState();
-          if (axisView !== "none") {
-            setAxisView("none");
+          if (axisView === "none") return; // normal mode [web:183][web:192]
+
+          if (snappingRef.current) return; // ignore changes caused by our own snap [web:184][web:189]
+
+          const controls = controlsRef.current;
+          if (!controls) return;
+
+          const polar = controls.getPolarAngle();         // [web:2][web:181]
+          const azimuth = controls.getAzimuthalAngle();   // [web:2][web:181]
+
+          const eps = 1e-3;
+
+          const rotated =
+            Math.abs(polar - lockedPolarRef.current) > eps ||
+            Math.abs(azimuth - lockedAzimuthRef.current) > eps;
+
+          if (rotated) {
+            setAxisView("none"); // user rotated; leave ortho mode [web:181][web:189]
           }
         }}
       />
