@@ -9,13 +9,14 @@ import type { Thruster } from "../lib/thrusterSchema";
 
 interface Props {
   thrusterId: string;
+  showControls: boolean;
 }
 
 // In gizmo local space, (-1, 0, 0) is the exhaust direction (nozzle pointing "back")
 // Matching: To thrust forward, ExhaustDirection = (-1, 0, 0)
 const EXHAUST_LOCAL_AXIS = new Vector3(-1, 0, 0);
 
-export const ThrusterGizmo: React.FC<Props> = ({ thrusterId }) => {
+export const ThrusterGizmo: React.FC<Props> = ({ thrusterId, showControls }) => {
   const { camera, gl } = useThree();
   const thrusters = useThrustersStore((s) => s.thrusters);
   const thruster = thrusters.find((t) => t.id === thrusterId) as Thruster | undefined;
@@ -88,27 +89,32 @@ export const ThrusterGizmo: React.FC<Props> = ({ thrusterId }) => {
   };
 
   return (
-    <TransformControls
-      object={groupRef}
-      camera={camera}
-      domElement={gl.domElement}
-      mode={transformMode}
-      onMouseDown={() => setSelected(thrusterId)}
-      onMouseUp={commitTransformToState}
-    >
+    <>
       <group ref={groupRef}>
         {/* Sphere at thruster location */}
-        <mesh>
+        <mesh onClick={() => setSelected(thrusterId)}>
           <sphereGeometry args={[0.05, 16, 16]} />
           <meshStandardMaterial color="orange" />
         </mesh>
 
         {/* Cone offset along local -X to show exhaustDirection visually */}
-        <mesh ref={coneRef} position={[-0.15, 0, 0]}>
+        <mesh ref={coneRef} position={[-0.15, 0, 0]} onClick={() => setSelected(thrusterId)}>
           <coneGeometry args={[0.04, 0.3, 16]} />
           <meshStandardMaterial color="yellow" />
         </mesh>
       </group>
-    </TransformControls>
+
+      {/* Only show TransformControls for the selected thruster */}
+      {showControls && (
+        <TransformControls
+          object={groupRef}
+          camera={camera}
+          domElement={gl.domElement}
+          mode={transformMode}
+          onMouseDown={() => setSelected(thrusterId)}
+          onMouseUp={commitTransformToState}
+        />
+      )}
+    </>
   );
 };

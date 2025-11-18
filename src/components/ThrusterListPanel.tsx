@@ -7,11 +7,17 @@ export const ThrusterListPanel: React.FC = () => {
   const selectedId = useThrustersStore((s) => s.selectedId);
   const setSelected = useThrustersStore((s) => s.setSelected);
   const addThruster = useThrustersStore((s) => s.addThruster);
+  const duplicateThruster = useThrustersStore((s) => s.duplicateThruster);
   const removeThruster = useThrustersStore((s) => s.removeThruster);
 
   return (
     <div className="panel">
-      <button className="primary" onClick={addThruster}>+ Add Thruster</button>
+      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}>
+        <button className="primary" onClick={addThruster}>+ Add</button>
+        {selectedId && (
+          <button onClick={() => duplicateThruster(selectedId)}>Duplicate</button>
+        )}
+      </div>
       <ul className="thruster-list">
         {thrusters.map((t) => (
           <li

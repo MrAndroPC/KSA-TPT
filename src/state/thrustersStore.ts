@@ -6,6 +6,7 @@ interface ThrustersState {
   thrusters: Thruster[];
   selectedId: string | null;
   addThruster: () => void;
+  duplicateThruster: (id: string) => void;
   updateThruster: (id: string, patch: Partial<Thruster>) => void;
   setSelected: (id: string | null) => void;
   removeThruster: (id: string) => void;
@@ -23,6 +24,36 @@ export const useThrustersStore = create<ThrustersState>((set, _get) => ({
       return {
         thrusters: [...state.thrusters, t],
         selectedId: t.id,
+      };
+    }),
+
+  duplicateThruster: (id) =>
+    set((state) => {
+      const original = state.thrusters.find((t) => t.id === id);
+      if (!original) return state;
+
+      // Find a unique ID for the duplicate
+      let newIndex = state.thrusters.length + 1;
+      let newId = `${original.id}_copy`;
+      while (state.thrusters.some((t) => t.id === newId)) {
+        newId = `${original.id}_copy${newIndex}`;
+        newIndex++;
+      }
+
+      const duplicate: Thruster = {
+        ...original,
+        id: newId,
+        // Offset position slightly so it's visible
+        location: {
+          x: original.location.x + 0.1,
+          y: original.location.y + 0.1,
+          z: original.location.z + 0.1,
+        },
+      };
+
+      return {
+        thrusters: [...state.thrusters, duplicate],
+        selectedId: duplicate.id,
       };
     }),
 

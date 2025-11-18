@@ -9,6 +9,7 @@ import { LoadedModel } from "./LoadedModel";
 import { ThrustersGizmos } from "./ThrustersGizmos";
 import { useEditorStore } from "../state/editorStore";
 import { useModelStore } from "../state/modelStore";
+import { useThrustersStore } from "../state/thrustersStore";
 
 export const SceneRoot: React.FC = () => {
   const threeCamera = useThree((state) => state.camera as PerspectiveCamera);
@@ -18,6 +19,10 @@ export const SceneRoot: React.FC = () => {
   const axisView = useEditorStore((s) => s.axisView);
   const meanRadius = useModelStore((s) => s.meanRadius) ?? 1;
   const glbUrl = useModelStore((s) => s.glbUrl);
+  
+  const selectedId = useThrustersStore((s) => s.selectedId);
+  const thrusters = useThrustersStore((s) => s.thrusters);
+  const selectedThruster = thrusters.find((t) => t.id === selectedId);
 
   const lockedPolarRef = useRef(0);
   const lockedAzimuthRef = useRef(0);
@@ -33,7 +38,12 @@ export const SceneRoot: React.FC = () => {
     if (!camera) return;
 
     const controls = controlsRef.current;
-    const target = new Vector3(0, 0, 0);
+    
+    // Focus on selected thruster if available, otherwise on origin
+    const target = selectedThruster
+      ? new Vector3(selectedThruster.location.x, selectedThruster.location.y, selectedThruster.location.z)
+      : new Vector3(0, 0, 0);
+    
     const dist = meanRadius * 3;
 
     if (axisView === "none") {
@@ -48,22 +58,22 @@ export const SceneRoot: React.FC = () => {
     const pos = new Vector3();
     switch (axisView) {
       case "front":
-        pos.set(dist, 0, 0);
+        pos.set(target.x + dist, target.y, target.z);
         break;
       case "back":
-        pos.set(-dist, 0, 0);
+        pos.set(target.x - dist, target.y, target.z);
         break;
       case "right":
-        pos.set(0, dist, 0);
+        pos.set(target.x, target.y + dist, target.z);
         break;
       case "left":
-        pos.set(0, -dist, 0);
+        pos.set(target.x, target.y - dist, target.z);
         break;
       case "top":
-        pos.set(0, 0, dist);
+        pos.set(target.x, target.y, target.z + dist);
         break;
       case "bottom":
-        pos.set(0, 0, -dist);
+        pos.set(target.x, target.y, target.z - dist);
         break;
     }
 
@@ -85,14 +95,14 @@ export const SceneRoot: React.FC = () => {
 
     snappingRef.current = false;
     snapTimestampRef.current = Date.now(); // record snap time [web:184][web:189]
-  }, [axisView, meanRadius]);
+  }, [axisView, meanRadius, selectedThruster?.location.x, selectedThruster?.location.y, selectedThruster?.location.z]);
 
   return (
     <>
       <color attach="background" args={["#101014"]} />
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={5} />
       <directionalLight position={[5, 10, 5]} intensity={0.8} />
-      <gridHelper args={[10, 10]} position={[0, -0.5, 0]} />
+      <gridHelper args={[100, 100]} position={[0, -0, 0]} />
       <axesHelper args={[2]} />
 
       {glbUrl && <LoadedModel url={glbUrl} />}
