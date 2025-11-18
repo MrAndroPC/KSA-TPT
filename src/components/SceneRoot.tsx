@@ -11,7 +11,7 @@ import { useEditorStore } from "../state/editorStore";
 import { useModelStore } from "../state/modelStore";
 
 export const SceneRoot: React.FC = () => {
-  const threeCamera = useThree((state) => state.camera as PerspectiveCamera); // [web:197][attached_file:1]
+  const threeCamera = useThree((state) => state.camera as PerspectiveCamera);
   const cameraRef = useRef<PerspectiveCamera | null>(threeCamera);
   const controlsRef = useRef<OrbitControlsImpl>(null!);
 
@@ -19,29 +19,31 @@ export const SceneRoot: React.FC = () => {
   const meanRadius = useModelStore((s) => s.meanRadius) ?? 1;
   const glbUrl = useModelStore((s) => s.glbUrl);
 
-  const lockedPolarRef = useRef(0);     // [web:2][web:181]
-  const lockedAzimuthRef = useRef(0);   // [web:2][web:181]
-  const snappingRef = useRef(false);    // ignore onChange while snapping [web:184][web:189]
+  const lockedPolarRef = useRef(0);
+  const lockedAzimuthRef = useRef(0);
+  const snappingRef = useRef(false);
+  const snapTimestampRef = useRef(0); // timestamp when snap completes [web:184][web:189]
 
   useEffect(() => {
     cameraRef.current = threeCamera;
-  }, [threeCamera]); // [web:197][attached_file:1]
+  }, [threeCamera]);
 
   useEffect(() => {
     const camera = cameraRef.current;
-    if (!camera) return; // [web:197][attached_file:1]
+    if (!camera) return;
 
     const controls = controlsRef.current;
     const target = new Vector3(0, 0, 0);
-    const dist = meanRadius * 3; // [web:146][web:150]
+    const dist = meanRadius * 3;
 
     if (axisView === "none") {
       camera.fov = 50;
       camera.updateProjectionMatrix();
+      snapTimestampRef.current = 0; // clear grace period [web:184]
       return;
     }
 
-    snappingRef.current = true; // programmatic snap starts [web:184][web:189]
+    snappingRef.current = true;
 
     const pos = new Vector3();
     switch (axisView) {
@@ -68,21 +70,22 @@ export const SceneRoot: React.FC = () => {
     camera.position.copy(pos);
     if (controls) {
       controls.target.copy(target);
-      controls.update(); // will fire onChange, but snappingRef prevents exit [web:181][web:184][web:189]
+      controls.update();
 
-      lockedPolarRef.current = controls.getPolarAngle();       // [web:2][web:181][web:189]
-      lockedAzimuthRef.current = controls.getAzimuthalAngle(); // [web:2][web:181][web:189]
+      lockedPolarRef.current = controls.getPolarAngle();
+      lockedAzimuthRef.current = controls.getAzimuthalAngle();
     } else {
       camera.lookAt(target);
       lockedPolarRef.current = 0;
       lockedAzimuthRef.current = 0;
     }
 
-    camera.fov = 5; // pseudo-orthographic [web:168][web:179]
+    camera.fov = 5;
     camera.updateProjectionMatrix();
 
-    snappingRef.current = false; // snap finished [web:184][web:189]
-  }, [axisView, meanRadius]); // [web:181][web:189][attached_file:1]
+    snappingRef.current = false;
+    snapTimestampRef.current = Date.now(); // record snap time [web:184][web:189]
+  }, [axisView, meanRadius]);
 
   return (
     <>
@@ -102,15 +105,21 @@ export const SceneRoot: React.FC = () => {
         makeDefault
         onChange={() => {
           const { axisView, setAxisView } = useEditorStore.getState();
-          if (axisView === "none") return; // normal mode [web:183][web:192]
+          if (axisView === "none") return;
 
-          if (snappingRef.current) return; // ignore changes caused by our own snap [web:184][web:189]
+          if (snappingRef.current) return; // ignore programmatic snap [web:184][web:189]
+
+          // Grace period: ignore changes for 200ms after snap to avoid micro-movements during click [web:184][web:189]
+          const gracePeriod = 200; // ms
+          if (Date.now() - snapTimestampRef.current < gracePeriod) {
+            return;
+          }
 
           const controls = controlsRef.current;
           if (!controls) return;
 
-          const polar = controls.getPolarAngle();         // [web:2][web:181]
-          const azimuth = controls.getAzimuthalAngle();   // [web:2][web:181]
+          const polar = controls.getPolarAngle();
+          const azimuth = controls.getAzimuthalAngle();
 
           const eps = 1e-3;
 
@@ -119,7 +128,7 @@ export const SceneRoot: React.FC = () => {
             Math.abs(azimuth - lockedAzimuthRef.current) > eps;
 
           if (rotated) {
-            setAxisView("none"); // user rotated; leave ortho mode [web:181][web:189]
+            setAxisView("none");
           }
         }}
       />
