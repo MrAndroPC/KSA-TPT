@@ -9,7 +9,6 @@ export function thrustersToXml(thrusters: Thruster[]): string {
   });
 
   const xmlThrusters = {
-    Thrusters: {
       Thruster: thrusters.map((t) => ({
         "@_Id": t.id,
         Location: {
@@ -44,7 +43,6 @@ export function thrustersToXml(thrusters: Thruster[]): string {
         },
         // no ThrusterLight here
       })),
-    },
   };
 
   return builder.build(xmlThrusters);

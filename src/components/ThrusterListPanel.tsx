@@ -10,25 +10,20 @@ export const ThrusterListPanel: React.FC = () => {
   const removeThruster = useThrustersStore((s) => s.removeThruster);
 
   return (
-    <div style={{ width: "260px", padding: "0.5rem", borderLeft: "1px solid #333" }}>
-      <button onClick={addThruster}>+ Add thruster</button>
-      <ul style={{ listStyle: "none", padding: 0 }}>
+    <div className="panel">
+      <button className="primary" onClick={addThruster}>+ Add Thruster</button>
+      <ul className="thruster-list">
         {thrusters.map((t) => (
           <li
             key={t.id}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              cursor: "pointer",
-              padding: "0.25rem",
-              background: t.id === selectedId ? "#333" : "transparent",
-            }}
+            className={`thruster-list-item ${t.id === selectedId ? "selected" : ""}`}
           >
-            <span onClick={() => setSelected(t.id)}>{t.id}</span>
+            <span className="thruster-list-item-label" onClick={() => setSelected(t.id)}>
+              {t.id}
+            </span>
             <button
+              className="danger"
               onClick={() => removeThruster(t.id)}
-              style={{ marginLeft: "0.25rem" }}
             >
               ✕
             </button>

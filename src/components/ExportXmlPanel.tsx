@@ -16,11 +16,10 @@ export const ExportXmlPanel: React.FC = () => {
   };
 
   return (
-    <div style={{ marginTop: "0.5rem" }}>
-      <button onClick={copy}>Copy XML</button>
+    <div className="panel">
+      <button className="primary" onClick={copy}>Copy XML</button>
       <textarea
         readOnly
-        style={{ width: "100%", height: "200px", marginTop: "0.5rem" }}
         value={xml}
       />
     </div>

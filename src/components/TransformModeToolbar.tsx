@@ -17,20 +17,22 @@ export const TransformModeToolbar: React.FC = () => {
   }, [setMode]);
 
   return (
-    <div style={{ marginBottom: "0.5rem" }}>
-      <span style={{ marginRight: "0.5rem" }}>Gizmo mode:</span>
-      <button
-        onClick={() => setMode("translate")}
-        style={{ fontWeight: mode === "translate" ? "bold" : "normal" }}
-      >
-        T / Translate
-      </button>
-      <button
-        onClick={() => setMode("rotate")}
-        style={{ marginLeft: "0.25rem", fontWeight: mode === "rotate" ? "bold" : "normal" }}
-      >
-        R / Rotate
-      </button>
+    <div className="toolbar">
+      <span className="toolbar-label">Gizmo mode:</span>
+      <div className="toolbar-group">
+        <button
+          onClick={() => setMode("translate")}
+          className={mode === "translate" ? "active" : ""}
+        >
+          T / Translate
+        </button>
+        <button
+          onClick={() => setMode("rotate")}
+          className={mode === "rotate" ? "active" : ""}
+        >
+          R / Rotate
+        </button>
+      </div>
     </div>
   );
 };

@@ -6,11 +6,12 @@ import { ThrusterPropertiesForm } from "./components/ThrusterPropertiesForm";
 import { ExportXmlPanel } from "./components/ExportXmlPanel";
 import { TransformModeToolbar } from "./components/TransformModeToolbar";
 import { ModelInfoPanel } from "./components/ModelInfoPanel";
+import "./index.css";
 
 const App: React.FC = () => {
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <div style={{ width: "260px", padding: "0.5rem" }}>
+    <div className="app-container">
+      <div className="sidebar">
         <h3>Thruster Editor</h3>
         <ImportDropZone />
         <ModelInfoPanel />

@@ -9,7 +9,7 @@ export const ThrusterPropertiesForm: React.FC = () => {
   const resetThrusterRotation = useThrustersStore((s) => s.resetThrusterRotation);
 
   const thruster = thrusters.find((t) => t.id === selectedId);
-  if (!thruster) return <div>No thruster selected</div>;
+  if (!thruster) return <div className="info-display">No thruster selected</div>;
 
   const updateScalarField =
     (field: "thrustN" | "specificImpulseSeconds" | "minimumPulseTimeSeconds") =>
@@ -46,140 +46,159 @@ export const ThrusterPropertiesForm: React.FC = () => {
     };
 
   return (
-    <div style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
-      <div>
-        Id:{" "}
-        <input value={thruster.id} onChange={updateStringField("id")} />
-      </div>
-      <div>
-        Control CSV:{" "}
-        <input
-          value={thruster.controlMapCsv}
-          onChange={updateStringField("controlMapCsv")}
-        />
+    <div className="panel properties-form">
+      <div className="form-group">
+        <div className="form-row">
+          <label className="form-label">Id:</label>
+          <input value={thruster.id} onChange={updateStringField("id")} />
+        </div>
       </div>
 
-      {/* Position (manual XYZ) */}
-      <div style={{ marginTop: "0.5rem" }}>
-        Position:
-        <div>
-            <div>
-          X:{" "}
+      <div className="form-group">
+        <div className="form-row">
+          <label className="form-label">Control CSV:</label>
           <input
-            type="number"
-            step="0.001"
-            value={thruster.location.x}
-            onChange={updateLocation("x")}
+            value={thruster.controlMapCsv}
+            onChange={updateStringField("controlMapCsv")}
           />
+        </div>
+      </div>
+
+      <div className="properties-section">
+        <div className="properties-section-title">Position</div>
+        <div className="input-group">
+          <div className="form-row">
+            <label className="form-label">X:</label>
+            <input
+              type="number"
+              step="0.001"
+              value={thruster.location.x}
+              onChange={updateLocation("x")}
+            />
           </div>
-          <div>
-          Y:{" "}
-          <input
-            type="number"
-            step="0.001"
-            value={thruster.location.z}
-            onChange={updateLocation("z")}
-          />
-                    <div>
-          Z:{" "}
-          <input
-            type="number"
-            step="0.001"
-            value={thruster.location.y}
-            onChange={updateLocation("y")}
-          />
+          <div className="form-row">
+            <label className="form-label">Y:</label>
+            <input
+              type="number"
+              step="0.001"
+              value={thruster.location.z}
+              onChange={updateLocation("z")}
+            />
           </div>
+          <div className="form-row">
+            <label className="form-label">Z:</label>
+            <input
+              type="number"
+              step="0.001"
+              value={thruster.location.y}
+              onChange={updateLocation("y")}
+            />
           </div>
         </div>
       </div>
 
-      {/* Direction (optional manual XYZ) */}
-      <div style={{ marginTop: "0.5rem" }}>
-        Direction:
-        <div>
-            <div>
-          X:{" "}
-          <input
-            type="number"
-            step="0.01"
-            value={thruster.exhaustDirection.x}
-            onChange={updateDirection("x")}
-          />
+      <div className="properties-section">
+        <div className="properties-section-title">Direction</div>
+        <div className="input-group">
+          <div className="form-row">
+            <label className="form-label">X:</label>
+            <input
+              type="number"
+              step="0.01"
+              value={thruster.exhaustDirection.x}
+              onChange={updateDirection("x")}
+            />
           </div>
-          <div>
-          Y:{" "}
-          <input
-            type="number"
-            step="0.01"
-            value={thruster.exhaustDirection.z} // Y and Z are swapped
-            onChange={updateDirection("z")}
-          />
+          <div className="form-row">
+            <label className="form-label">Y:</label>
+            <input
+              type="number"
+              step="0.01"
+              value={thruster.exhaustDirection.z}
+              onChange={updateDirection("z")}
+            />
           </div>
-          <div>
-          Z:{" "}
-          <input
-            type="number"
-            step="0.01"
-            value={thruster.exhaustDirection.y} // Y and Z are swapped
-            onChange={updateDirection("y")}
-          />
+          <div className="form-row">
+            <label className="form-label">Z:</label>
+            <input
+              type="number"
+              step="0.01"
+              value={thruster.exhaustDirection.y}
+              onChange={updateDirection("y")}
+            />
           </div>
+          <button onClick={() => resetThrusterRotation(thruster.id)}>
+            Reset rotation (X-)
+          </button>
         </div>
-        <button
-          style={{ marginTop: "0.25rem" }}
-          onClick={() => resetThrusterRotation(thruster.id)}
-        >
-          Reset rotation (X-)
-        </button>
       </div>
 
-      <div style={{ marginTop: "0.5rem" }}>
-        Thrust N:{" "}
-        <input
-          type="number"
-          step="0.1"
-          value={thruster.thrustN}
-          onChange={updateScalarField("thrustN")}
-        />
+      <div className="properties-section">
+        <div className="properties-section-title">Performance</div>
+        <div className="form-group">
+          <div className="form-row">
+            <label className="form-label">Thrust N:</label>
+            <input
+              type="number"
+              step="0.1"
+              value={thruster.thrustN}
+              onChange={updateScalarField("thrustN")}
+            />
+          </div>
+        </div>
+        <div className="form-group">
+          <div className="form-row">
+            <label className="form-label">Isp (s):</label>
+            <input
+              type="number"
+              step="1"
+              value={thruster.specificImpulseSeconds}
+              onChange={updateScalarField("specificImpulseSeconds")}
+            />
+          </div>
+        </div>
+        <div className="form-group">
+          <div className="form-row">
+            <label className="form-label">Min pulse (s):</label>
+            <input
+              type="number"
+              step="0.001"
+              value={thruster.minimumPulseTimeSeconds}
+              onChange={updateScalarField("minimumPulseTimeSeconds")}
+            />
+          </div>
+        </div>
       </div>
-      <div>
-        Isp (s):{" "}
-        <input
-          type="number"
-          step="1"
-          value={thruster.specificImpulseSeconds}
-          onChange={updateScalarField("specificImpulseSeconds")}
-        />
-      </div>
-      <div>
-        Min pulse (s):{" "}
-        <input
-          type="number"
-          step="0.001"
-          value={thruster.minimumPulseTimeSeconds}
-          onChange={updateScalarField("minimumPulseTimeSeconds")}
-        />
-      </div>
-      <div>
-        VolumetricExhaust Id:{" "}
-        <input
-          value={thruster.volumetricExhaustId}
-          onChange={updateStringField("volumetricExhaustId")}
-        />
-      </div>
-      <div>
-        Sound Action:{" "}
-        <input
-          value={thruster.soundAction}
-          onChange={updateStringField("soundAction")}
-        />
-      </div>
-      <div>
-        Sound Id:{" "}
-        <input
-          value={thruster.soundId}
-          onChange={updateStringField("soundId")}
-        />
+
+      <div className="properties-section">
+        <div className="properties-section-title">Effects & Sound</div>
+        <div className="form-group">
+          <div className="form-row">
+            <label className="form-label">Exhaust Id:</label>
+            <input
+              value={thruster.volumetricExhaustId}
+              onChange={updateStringField("volumetricExhaustId")}
+            />
+          </div>
+        </div>
+        <div className="form-group">
+          <div className="form-row">
+            <label className="form-label">Sound Action:</label>
+            <input
+              value={thruster.soundAction}
+              onChange={updateStringField("soundAction")}
+            />
+          </div>
+        </div>
+        <div className="form-group">
+          <div className="form-row">
+            <label className="form-label">Sound Id:</label>
+            <input
+              value={thruster.soundId}
+              onChange={updateStringField("soundId")}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

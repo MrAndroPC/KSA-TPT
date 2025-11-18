@@ -30,16 +30,8 @@ export const ImportDropZone: React.FC = () => {
   };
 
   return (
-    <div
-      onDrop={onDrop}
-      onDragOver={onDragOver}
-      style={{
-        border: "1px dashed gray",
-        padding: "0.5rem",
-        marginBottom: "0.5rem",
-      }}
-    >
-      <div>Drop .glb here or choose file:</div>
+    <div className="drop-zone" onDrop={onDrop} onDragOver={onDragOver}>
+      <div className="drop-zone-label">Drop .glb here or choose file:</div>
       <input type="file" accept=".glb" onChange={onInputChange} />
     </div>
   );
