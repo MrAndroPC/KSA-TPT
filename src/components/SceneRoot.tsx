@@ -103,6 +103,9 @@ export const SceneRoot: React.FC = () => {
       <OrbitControls
         ref={controlsRef}
         makeDefault
+        enableDamping={true}
+        dampingFactor={0.3}
+        rotateSpeed={1}
         onChange={() => {
           const { axisView, setAxisView } = useEditorStore.getState();
           if (axisView === "none") return;

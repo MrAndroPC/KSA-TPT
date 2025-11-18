@@ -2,14 +2,25 @@
 import React, { useMemo } from "react";
 import { GizmoHelper } from "@react-three/drei";
 import { useEditorStore } from "../state/editorStore";
+import type { AxisView } from "../state/editorStore";
 
 export const AxisGizmo: React.FC = () => {
+  const axisView = useEditorStore((s) => s.axisView);
   const setAxisView = useEditorStore((s) => s.setAxisView);
 
-  // Create buffer arrays once [web:181][web:182]
+  // Create buffer arrays once
   const xAxisPoints = useMemo(() => new Float32Array([-1, 0, 0, 1, 0, 0]), []);
   const yAxisPoints = useMemo(() => new Float32Array([0, -1, 0, 0, 1, 0]), []);
   const zAxisPoints = useMemo(() => new Float32Array([0, 0, -1, 0, 0, 1]), []);
+
+  // Helper: toggle to opposite if clicking current axis, else set new axis [web:163][web:115]
+  const handleAxisClick = (target: AxisView, opposite: AxisView) => {
+    if (axisView === target) {
+      setAxisView(opposite); // flip to opposite
+    } else {
+      setAxisView(target);
+    }
+  };
 
   return (
     <GizmoHelper alignment="top-right" margin={[80, 80]}>
@@ -19,7 +30,7 @@ export const AxisGizmo: React.FC = () => {
           position={[1, 0, 0]}
           onClick={(e) => {
             e.stopPropagation();
-            setAxisView("front"); // +X
+            handleAxisClick("front", "back"); // +X ↔ -X
           }}
         >
           <sphereGeometry args={[0.2, 16, 16]} />
@@ -29,7 +40,7 @@ export const AxisGizmo: React.FC = () => {
           position={[-1, 0, 0]}
           onClick={(e) => {
             e.stopPropagation();
-            setAxisView("back"); // -X
+            handleAxisClick("back", "front"); // -X ↔ +X
           }}
         >
           <sphereGeometry args={[0.2, 16, 16]} />
@@ -41,7 +52,7 @@ export const AxisGizmo: React.FC = () => {
           position={[0, 1, 0]}
           onClick={(e) => {
             e.stopPropagation();
-            setAxisView("right"); // +Y
+            handleAxisClick("right", "left"); // +Y ↔ -Y
           }}
         >
           <sphereGeometry args={[0.2, 16, 16]} />
@@ -51,7 +62,7 @@ export const AxisGizmo: React.FC = () => {
           position={[0, -1, 0]}
           onClick={(e) => {
             e.stopPropagation();
-            setAxisView("left"); // -Y
+            handleAxisClick("left", "right"); // -Y ↔ +Y
           }}
         >
           <sphereGeometry args={[0.2, 16, 16]} />
@@ -63,24 +74,24 @@ export const AxisGizmo: React.FC = () => {
           position={[0, 0, 1]}
           onClick={(e) => {
             e.stopPropagation();
-            setAxisView("top"); // +Z
+            handleAxisClick("top", "bottom"); // +Z ↔ -Z
           }}
         >
-          <sphereGeometry args={[0.2, 16, 16]}  />
+          <sphereGeometry args={[0.2, 16, 16]} />
           <meshBasicMaterial color="blue" />
         </mesh>
         <mesh
           position={[0, 0, -1]}
           onClick={(e) => {
             e.stopPropagation();
-            setAxisView("bottom"); // -Z
+            handleAxisClick("bottom", "top"); // -Z ↔ +Z
           }}
         >
           <sphereGeometry args={[0.2, 16, 16]} />
           <meshBasicMaterial color="darkblue" />
         </mesh>
 
-        {/* Axis lines - corrected syntax */}
+        {/* Axis lines */}
         <line>
           <bufferGeometry>
             <bufferAttribute
